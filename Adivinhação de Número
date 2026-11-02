@@ -1,0 +1,99 @@
+"""Jogo de Adivinhação de Número
+
+O computador sorteia um número e o jogador tenta descobrir qual é,
+recebendo dicas de "maior" ou "menor" a cada palpite.
+"""
+
+import random
+
+# Níveis de dificuldade: nome, valor mínimo, valor máximo e nº de tentativas
+NIVEIS = {
+    "1": ("Fácil", 1, 50, 10),
+    "2": ("Médio", 1, 100, 7),
+    "3": ("Difícil", 1, 500, 9),
+}
+
+
+def escolher_nivel():
+    """Mostra o menu de níveis e devolve o nível escolhido."""
+    print("\nEscolha o nível de dificuldade:")
+    for chave, (nome, minimo, maximo, tentativas) in NIVEIS.items():
+        print(f"  {chave} - {nome} (número entre {minimo} e {maximo}, {tentativas} tentativas)")
+
+    while True:
+        opcao = input("Nível: ").strip()
+        if opcao in NIVEIS:
+            return NIVEIS[opcao]
+        print("Opção inválida. Digite 1, 2 ou 3.")
+
+
+def ler_palpite(minimo, maximo):
+    """Lê um palpite válido (número inteiro dentro do intervalo)."""
+    while True:
+        entrada = input("Seu palpite: ").strip()
+        try:
+            palpite = int(entrada)
+        except ValueError:
+            print("Digite apenas números inteiros.")
+            continue
+
+        if minimo <= palpite <= maximo:
+            return palpite
+        print(f"O número deve estar entre {minimo} e {maximo}.")
+
+
+def jogar_rodada(nivel):
+    """Executa uma rodada. Devolve o nº de tentativas usadas se acertou, ou None se perdeu."""
+    nome, minimo, maximo, max_tentativas = nivel
+    secreto = random.randint(minimo, maximo)
+
+    print(f"\nPensei em um número entre {minimo} e {maximo}. Você tem {max_tentativas} tentativas!")
+
+    for tentativa in range(1, max_tentativas + 1):
+        print(f"\nTentativa {tentativa}/{max_tentativas}")
+        palpite = ler_palpite(minimo, maximo)
+
+        if palpite == secreto:
+            print(f"🎉 Acertou! O número era {secreto}.")
+            return tentativa
+        elif palpite < secreto:
+            print("⬆️  O número secreto é MAIOR.")
+        else:
+            print("⬇️  O número secreto é MENOR.")
+
+    print(f"\n😢 Acabaram as tentativas! O número era {secreto}.")
+    return None
+
+
+def main():
+    recordes = {}  # melhor resultado (menos tentativas) por nível
+
+    print("=" * 40)
+    print("   JOGO DE ADIVINHAÇÃO DE NÚMERO")
+    print("=" * 40)
+
+    while True:
+        nivel = escolher_nivel()
+        resultado = jogar_rodada(nivel)
+
+        if resultado is not None:
+            nome = nivel[0]
+            if nome not in recordes or resultado < recordes[nome]:
+                recordes[nome] = resultado
+                print(f"🏆 Novo recorde no nível {nome}: {resultado} tentativa(s)!")
+
+        jogar_novamente = input("\nJogar novamente? (s/n): ").strip().lower()
+        if jogar_novamente != "s":
+            break
+
+    print("\nResumo dos recordes da sessão:")
+    if recordes:
+        for nome, tentativas in recordes.items():
+            print(f"  {nome}: {tentativas} tentativa(s)")
+    else:
+        print("  Nenhum recorde desta vez.")
+    print("\nObrigado por jogar!")
+
+
+if __name__ == "__main__":
+    main()
